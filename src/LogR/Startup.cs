@@ -24,6 +24,17 @@ namespace CustomLogger
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
+
+            services.AddCors(options =>
+            {
+                // this defines a CORS policy called "spa"
+                options.AddPolicy("spa", policy =>
+                {
+                    policy.WithOrigins("http://seq.revolution.connecting.rs")         // the origin specified is for the Single Page Application
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
+                });
+            });
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
@@ -40,6 +51,7 @@ namespace CustomLogger
                 app.UseForwardedHeaders(options);
             }
 
+            app.UseCors("spa");
             app.UseMvc();
         }
     }

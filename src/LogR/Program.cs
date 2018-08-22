@@ -27,7 +27,6 @@
                 .AddJsonFile($"appsettings.Custom.json", optional: true)
                 .AddJsonFile($"appsettings.{environmentName}.json", optional: true)
                 .AddCommandLine(args)
-                //.AddEnvironmentSecrets(args)
                 .Build();
 
             // LINK (Cameron): https://mitchelsellers.com/blogs/2017/10/09/real-world-aspnet-core-logging-configuration
@@ -35,7 +34,6 @@
                 .WriteTo.Async(a => a.Console())
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
                 .Enrich.FromLogContext()
-                //.Enrich.WithMachineName()
                 .ReadFrom.Configuration(configuration)
                 .CreateLogger();
 
@@ -47,8 +45,6 @@
             Log.Information($"Running on: {RuntimeInformation.OSDescription}");
 
             Console.Title = $"{title} [{version}]";
-
-            //configuration.ValidateEnvironmentSecrets(Log.Logger);
 
             try
             {

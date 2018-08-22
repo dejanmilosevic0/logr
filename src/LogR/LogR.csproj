@@ -6,12 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="old\LogEventPropertyObjectValue.cs" />
-    <Compile Remove="old\Serializer.cs" />
-    <Compile Remove="old\SerilogEventFormat.cs" />
-    <Compile Remove="old\StorageEvent.cs" />
-    <Compile Remove="old\StorageEventCreationData.cs" />
-    <Compile Remove="old\StructuredEvent.cs" />
     <Compile Remove="Serializer.cs" />
     <Compile Remove="SerilogEventFormat.cs" />
     <Compile Remove="StorageEvent.cs" />
@@ -24,6 +18,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="Serilog.AspNetCore" Version="2.1.1" />
     <PackageReference Include="Serilog.Enrichers.Environment" Version="2.1.2" />
+    <PackageReference Include="Serilog.Formatting.Compact.Reader" Version="1.0.2" />
     <PackageReference Include="Serilog.Settings.Configuration" Version="2.6.1" />
     <PackageReference Include="Serilog.Sinks.Async" Version="1.3.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
@@ -38,10 +33,6 @@
     <Content Update="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="old\" />
   </ItemGroup>
 
 </Project>

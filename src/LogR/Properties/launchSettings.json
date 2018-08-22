@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "LoggR": {
+    "LogR": {
       "commandName": "Project",
       "launchBrowser": false,
       "environmentVariables": {
