@@ -1,0 +1,4 @@
+﻿{
+  "serverUri": "http://localhost:5001",
+  "use_docker_image": false
+}

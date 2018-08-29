@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Lykke Corp.
 // See the LICENSE file in the project root for more information.
 
-namespace CustomLogger
+namespace LogR
 {
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
@@ -9,6 +9,9 @@ namespace CustomLogger
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Converters;
+    using Newtonsoft.Json.Serialization;
 
     public class Startup
     {
@@ -23,17 +26,18 @@ namespace CustomLogger
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc();
+            services.AddMvc()
+                .AddJsonOptions(
+                    options =>
+                    {
+                        options.SerializerSettings.ContractResolver = new DefaultContractResolver { NamingStrategy = new SnakeCaseNamingStrategy() };
+                        options.SerializerSettings.Converters.Add(new StringEnumConverter());
+                        options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+                    });
 
             services.AddCors(options =>
             {
-                // this defines a CORS policy called "spa"
-                options.AddPolicy("spa", policy =>
-                {
-                    policy.WithOrigins("http://seq.revolution.connecting.rs")         // the origin specified is for the Single Page Application
-                        .AllowAnyHeader()
-                        .AllowAnyMethod();
-                });
+                options.AddPolicy("logger", policy => policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
             });
         }
 
@@ -51,7 +55,7 @@ namespace CustomLogger
                 app.UseForwardedHeaders(options);
             }
 
-            app.UseCors("spa");
+            app.UseCors("logger");
             app.UseMvc();
         }
     }
