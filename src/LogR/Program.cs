@@ -37,7 +37,6 @@ namespace LogR
                 .WriteTo.Async(a => a.Console())
                 .WriteTo.Async(a => a.Test())
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-                .Enrich.FromLogContext()
                 .ReadFrom.Configuration(configuration)
                 .CreateLogger();
 
