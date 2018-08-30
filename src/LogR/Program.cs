@@ -35,6 +35,7 @@ namespace LogR
             // LINK (Cameron): https://mitchelsellers.com/blogs/2017/10/09/real-world-aspnet-core-logging-configuration
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Async(a => a.Console())
+                .WriteTo.Async(a => a.Test())
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
                 .Enrich.FromLogContext()
                 .ReadFrom.Configuration(configuration)

@@ -20,9 +20,9 @@ namespace LogR.Tests
         }
 
         [Fact]
-        public async Task CanLogEventsUsingApi()
+        public async Task CanLogEventsUsingApiWithValidMediaType()
         {
-            var logEvent = @"{""@t"":""2018-08-29T13:04:03.045Z"",""@l"":""Information"",""@mt"":""Hi, {user}!"",""name"":""myapp"",""user"":""Alice""}";
+            var logEvent = @"{""@t"":""2018-01-01T12:00:00.000Z"",""@l"":""Information"",""@mt"":""Hi, {user}!"",""name"":""myapp"",""user"":""Alice""}";
 
             using (var client = new HttpClient())
             using (var content = new StringContent(logEvent, Encoding.UTF8, "application/vnd.serilog.clef"))
@@ -35,5 +35,25 @@ namespace LogR.Tests
                 }
             }
         }
+
+        [Fact]
+        public async Task CanLogEventsUsingApiWithValidQueryStringParameter()
+        {
+            var logEvent = @"{""@t"":""2018-01-01T12:00:00.000Z"",""@l"":""Information"",""@mt"":""Hi, {user}!"",""name"":""myapp"",""user"":""Alice""}";
+
+            using (var client = new HttpClient())
+            using (var content = new StringContent(logEvent, Encoding.UTF8))
+            {
+                // act
+                using (var response = await client.PostAsync(new Uri(this.ServerUri + "/api/events/raw?clef=true"), content).ConfigureAwait(false))
+                {
+                    // assert
+                    response.StatusCode.Should().Be(HttpStatusCode.Created);
+                }
+            }
+        }
+
+        // CanLogEventsUsingSerilog
+        // CannotLogEventsWithInvalidMediaType
     }
 }
