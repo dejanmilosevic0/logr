@@ -30,6 +30,8 @@ namespace LogR.Tests
                 // act
                 using (var response = await client.PostAsync(new Uri(this.ServerUri + "/api/events/raw"), content).ConfigureAwait(false))
                 {
+                    var data = await this.GetServerLogEvents().ConfigureAwait(false);
+
                     // assert
                     response.StatusCode.Should().Be(HttpStatusCode.Created);
                 }

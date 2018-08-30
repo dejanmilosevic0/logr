@@ -2,10 +2,11 @@
 {
     using System;
     using System.Collections.Concurrent;
+    using System.IO;
+    using System.Net;
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
-    using Microsoft.AspNetCore.Http;
     using Serilog.Core;
     using Serilog.Events;
     using Serilog.Formatting.Compact;
@@ -27,44 +28,45 @@
             this.host.Start();
         }
 
-        public void Emit(LogEvent logEvent)
-        {
-            this.logEvents.Push(logEvent);
-        }
+        public void Emit(LogEvent logEvent) => this.logEvents.Push(logEvent);
 
-        public void Dispose()
-        {
+        public void Dispose() =>
             Task.Run(
                 async () =>
                 {
                     await Task.Delay(500).ConfigureAwait(false);
                     this.host.Dispose();
                 });
-        }
 
         private void Configure(IApplicationBuilder app)
         {
+            var formatter = new CompactJsonFormatter();
+
             app.Run(
                 async ctx =>
                 {
                     if (ctx.Request.Method == "GET")
                     {
                         ctx.Response.StatusCode = 200;
-                        ctx.Response.ContentType = "application/vnd.serilog.clef";
+                        ctx.Response.ContentType = "text/html"; // "application/vnd.serilog.clef";
 
-                        while (this.logEvents.TryPop(out var logEvent))
+                        using (var writer = new StreamWriter(ctx.Response.Body, System.Text.Encoding.UTF8))
                         {
-                            CompactJsonFormatter.FormatEvent(logEvent, ctx.Response.st)
+                            while (this.logEvents.TryPop(out var logEvent))
+                            {
+                                formatter.Format(logEvent, writer);
+                            }
                         }
-                        await ctx.Response.WriteAsync(.).ConfigureAwait(false);
-
-
 
                         ctx.Response.Body.Flush();
                     }
+                    else if (ctx.Request.Method == "DELETE")
+                    {
+                        this.logEvents.Clear();
+                    }
                     else
                     {
-                        ctx.Response.StatusCode = 404;
+                        ctx.Response.StatusCode = (int)HttpStatusCode.NotImplemented;
                     }
                 });
         }
