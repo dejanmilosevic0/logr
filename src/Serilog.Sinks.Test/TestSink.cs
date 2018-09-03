@@ -1,4 +1,7 @@
-﻿namespace Serilog.Sinks.Test
+﻿// Copyright (c) Lykke Corp.
+// See the LICENSE file in the project root for more information.
+
+namespace Serilog.Sinks.Test
 {
     using System;
     using System.Collections.Concurrent;
@@ -43,12 +46,12 @@
             var formatter = new CompactJsonFormatter();
 
             app.Run(
-                async ctx =>
+                ctx =>
                 {
                     if (ctx.Request.Method == "GET")
                     {
                         ctx.Response.StatusCode = 200;
-                        ctx.Response.ContentType = "text/html"; // "application/vnd.serilog.clef";
+                        ctx.Response.ContentType = "application/vnd.serilog.clef";
 
                         using (var writer = new StreamWriter(ctx.Response.Body, System.Text.Encoding.UTF8))
                         {
@@ -68,6 +71,8 @@
                     {
                         ctx.Response.StatusCode = (int)HttpStatusCode.NotImplemented;
                     }
+
+                    return Task.CompletedTask;
                 });
         }
     }

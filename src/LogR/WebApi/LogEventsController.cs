@@ -40,7 +40,13 @@ namespace LogR.WebApi
                 }
             }
 
-            return this.StatusCode((int)HttpStatusCode.Created);
+            // LINK (Cameron): https://github.com/serilog/serilog-sinks-seq/blob/9fe533663448c5ca799c4bb3d3e57c9ca6ed302b/src/Serilog.Sinks.Seq/Sinks/Seq/SeqApi.cs#L37
+            return new ContentResult
+            {
+                Content = @"{""MinimumLevelAccepted"":null}",
+                ContentType = "application/json",
+                StatusCode = (int)HttpStatusCode.Created,
+            };
         }
     }
 }
