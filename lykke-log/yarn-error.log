@@ -1,0 +1,58 @@
+Arguments: 
+  /usr/local/bin/node /opt/yarn/bin/yarn.js install
+
+PATH: 
+  /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+Yarn version: 
+  0.27.5
+
+Node version: 
+  8.4.0
+
+Platform: 
+  linux x64
+
+npm manifest: 
+  {
+    "name": "lykke-log",
+    "version": "1.0.3",
+    "description": "Produce universal library with webpack and es6",
+    "main": "lib/lykke-log.js",
+    "scripts": {
+      "build": "webpack --env dev && webpack --env build && npm run test",
+      "dev": "webpack --progress --colors --watch --env dev"
+    },
+    "dependencies": {
+      "structured-log-seq-sink": "^0.4.1"
+    },
+    "keywords": [],
+    "devDependencies": {
+      "@babel/cli": "^7.0.0-beta.51",
+      "@babel/core": "^7.0.0-beta.51",
+      "@babel/preset-env": "^7.0.0-beta.51",
+      "babel-eslint": "^8.0.3",
+      "babel-loader": "^8.0.0-beta.4",
+      "babel-plugin-add-module-exports": "^0.2.1",
+      "babel-preset-env": "^7.0.0-beta.3",
+      "babel-register": "^7.0.0-beta.3",
+      "uglifyjs-webpack-plugin": "^1.2.7",
+      "webpack": "^4.12.2",
+      "webpack-cli": "^3.0.8",
+    }
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile
+
+Trace: 
+  SyntaxError: /usr/src/app/package.json: Unexpected token } in JSON at position 812
+      at JSON.parse (<anonymous>)
+      at /opt/yarn/lib/yarn-cli.js:747:57
+      at Generator.next (<anonymous>)
+      at step (/opt/yarn/lib/yarn-cli.js:91:30)
+      at /opt/yarn/lib/yarn-cli.js:102:13
+      at <anonymous>
