@@ -24,7 +24,7 @@ namespace Serilog.Sinks.Test
         {
             this.host = new WebHostBuilder()
                 .UseKestrel()
-                .UseUrls("http://localhost:5002/")
+                .UseUrls("http://*:5002/")
                 .Configure(this.Configure)
                 .Build();
 
