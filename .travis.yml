@@ -1,7 +1,12 @@
+sudo: required
+
+services:
+  - docker
+
 language: node_js
-node_js:
-  - "0.11"
-  - "0.10"
+node_js: 
+  - "stable"
+
 env:
   - TEST_DIR=lykke-log
   - TEST_DIR=test
