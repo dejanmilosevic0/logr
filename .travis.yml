@@ -10,8 +10,8 @@ node_js:
 script: 
    - cd lykke-log  && npm install
    - cd .. && cd test && npm install
-   - cd .. && ./create-test-volume.sh
-   - ./create-test-network.sh
+   - cd .. && ./create_test_volume.sh
+   - ./create_test_network.sh
    - ./test.sh
 
 
