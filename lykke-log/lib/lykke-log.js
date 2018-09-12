@@ -291,258 +291,6 @@ process.umask = function() { return 0; };
 
 /***/ }),
 
-/***/ "./node_modules/structured-log-seq-sink/dist/structured-log-seq-sink.js":
-/*!******************************************************************************!*\
-  !*** ./node_modules/structured-log-seq-sink/dist/structured-log-seq-sink.js ***!
-  \******************************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-(function (global, factory) {
-   true ? module.exports = factory() :
-  undefined;
-}(this, (function () { 'use strict';
-
-  var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-  var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-  function postToSeq(url, apiKey, compact, body, done) {
-    var apiKeyParameter = apiKey ? '?apiKey=' + apiKey : '';
-    var promise = fetch(url + '/api/events/raw' + apiKeyParameter, {
-      headers: {
-        'content-type': compact ? 'application/vnd.serilog.clef' : 'application/json'
-      },
-      method: 'POST',
-      body: body
-    });
-
-    return !done ? promise : promise.then(function (response) {
-      return done(response);
-    });
-  }
-
-  function mapLogLevel(logLevel) {
-    // If the log level isn't numeric (structured-log < 0.1.0), return it as-is.
-    if (isNaN(logLevel)) {
-      return logLevel;
-    }
-
-    // Parse bitfield log level (structured-log >= 0.1.0-alpha).
-    if (logLevel === 1) {
-      return 'Fatal';
-    } else if (logLevel === 3) {
-      return 'Error';
-    } else if (logLevel === 7) {
-      return 'Warning';
-    } else if (logLevel === 31) {
-      return 'Debug';
-    } else if (logLevel === 63) {
-      return 'Verbose';
-    }
-
-    // Default to Information.
-    return 'Information';
-  }
-
-  function logSuppressedError(reason) {
-    if (typeof console !== 'undefined' && console.warn) {
-      console.warn('Suppressed error when logging to Seq: ' + reason);
-    }
-  }
-
-  var SeqSink = function () {
-    function SeqSink(options) {
-      var _this = this;
-
-      _classCallCheck(this, SeqSink);
-
-      this.url = null;
-      this.apiKey = null;
-      this.durable = false;
-      this.compact = false;
-      this.levelSwitch = null;
-      this.refreshLevelSwitchTimeoutId = null;
-      this.refreshLevelSwitchTimeoutInterval = 2 * 60 * 1000;
-      this.suppressErrors = true;
-
-      if (!options) {
-        throw new Error('\'options\' parameter is required.');
-      }
-      if (!options.url) {
-        throw new Error('\'options.url\' parameter is required.');
-      }
-
-      this.url = options.url.replace(/\/$/, '');
-      this.apiKey = options.apiKey;
-      this.levelSwitch = options.levelSwitch || null;
-      this.suppressErrors = options.suppressErrors !== false;
-
-      if (options.durable && typeof localStorage === 'undefined') {
-        if (typeof console !== 'undefined' && console.warn) {
-          console.warn('\'options.durable\' parameter was set to true, but \'localStorage\' is not available.');
-        }
-        this.durable = false;
-      } else {
-        this.durable = !!options.durable;
-      }
-
-      this.compact = !!options.compact;
-
-      if (this.durable) {
-        var requests = {};
-        for (var i = 0; i < localStorage.length; ++i) {
-          var storageKey = localStorage.key(i);
-          if (storageKey.indexOf('structured-log-seq-sink') !== 0) {
-            continue;
-          }
-
-          var body = localStorage.getItem(storageKey);
-          requests[storageKey] = postToSeq(this.url, this.apiKey, this.compact, body).then(function () {
-            return localStorage.removeItem(k);
-          }).catch(function (reason) {
-            return _this.suppressErrors ? logSuppressedError(reason) : Promise.reject(reason);
-          });
-        }
-      }
-
-      if (this.levelSwitch !== null) {
-        this.refreshLevelSwitchTimeoutId = setTimeout(function () {
-          return _this.sendToServer([]);
-        }, this.refreshLevelSwitchTimeoutInterval);
-      }
-    }
-
-    _createClass(SeqSink, [{
-      key: 'toString',
-      value: function toString() {
-        return 'SeqSink';
-      }
-    }, {
-      key: 'emit',
-      value: function emit(events, done) {
-        var _this2 = this;
-
-        var filteredEvents = this.levelSwitch ? events.filter(function (e) {
-          return _this2.levelSwitch.isEnabled(e.level);
-        }) : events;
-
-        if (!filteredEvents.length) {
-          return done ? Promise.resolve().then(function () {
-            return done(null);
-          }) : Promise.resolve();
-        }
-
-        return this.sendToServer(filteredEvents, done);
-      }
-    }, {
-      key: 'sendToServer',
-      value: function sendToServer(events, done) {
-        var _this3 = this;
-
-        var seqEvents = this.compact ? events.reduce(function (s, e) {
-          var mappedEvent = _extends({
-            '@l': mapLogLevel(e.level),
-            '@mt': e.messageTemplate.raw,
-            '@t': e.timestamp
-          }, e.properties);
-          if (e.error instanceof Error && e.error.stack) {
-            mappedEvent['@x'] = e.error.stack;
-          }
-          return '' + s + JSON.stringify(mappedEvent) + '\n';
-        }, '').replace(/\s+$/g, '') : events.map(function (e) {
-          var mappedEvent = {
-            Level: mapLogLevel(e.level),
-            MessageTemplate: e.messageTemplate.raw,
-            Properties: e.properties,
-            Timestamp: e.timestamp
-          };
-          if (e.error instanceof Error && e.error.stack) {
-            mappedEvent.Exception = e.error.stack;
-          }
-          return mappedEvent;
-        });
-
-        var body = this.compact ? seqEvents : JSON.stringify({
-          Events: seqEvents
-        });
-
-        var storageKey = void 0;
-        if (this.durable) {
-          storageKey = 'structured-log-seq-sink-' + new Date().getTime() + '-' + (Math.floor(Math.random() * 1000000) + 1);
-          localStorage.setItem(storageKey, body);
-        }
-
-        return postToSeq(this.url, this.apiKey, this.compact, body, done).then(function (response) {
-          return response.json();
-        }).then(function (json) {
-          return _this3.updateLogLevel(json);
-        }).then(function () {
-          if (storageKey) localStorage.removeItem(storageKey);
-        }).catch(function (reason) {
-          return _this3.suppressErrors ? logSuppressedError(reason) : Promise.reject(reason);
-        });
-      }
-    }, {
-      key: 'updateLogLevel',
-      value: function updateLogLevel(response) {
-        var _this4 = this;
-
-        if (!this.levelSwitch) return;
-
-        if (this.refreshLevelSwitchTimeoutId) {
-          clearTimeout(this.refreshLevelSwitchTimeoutId);
-          this.refreshLevelSwitchTimeoutId = setTimeout(function () {
-            return _this4.sendToServer([]);
-          }, this.refreshLevelSwitchTimeoutInterval);
-        }
-
-        if (response && response.MinimumLevelAccepted) {
-          switch (response.MinimumLevelAccepted) {
-            case 'Fatal':
-              this.levelSwitch.fatal();
-              break;
-            case 'Error':
-              this.levelSwitch.error();
-              break;
-            case 'Warning':
-              this.levelSwitch.warning();
-              break;
-            case 'Information':
-              this.levelSwitch.information();
-              break;
-            case 'Debug':
-              this.levelSwitch.debug();
-              break;
-            case 'Verbose':
-              this.levelSwitch.verbose();
-              break;
-          }
-        }
-      }
-    }, {
-      key: 'flush',
-      value: function flush() {
-        return Promise.resolve();
-      }
-    }]);
-
-    return SeqSink;
-  }();
-
-  function SeqSinkFactory(options) {
-    return new SeqSink(options);
-  }
-
-  return SeqSinkFactory;
-
-})));
-
-
-/***/ }),
-
 /***/ "./node_modules/structured-log/dist/structured-log.js":
 /*!************************************************************!*\
   !*** ./node_modules/structured-log/dist/structured-log.js ***!
@@ -1379,37 +1127,6 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 /***/ }),
 
-/***/ "./node_modules/webpack/buildin/global.js":
-/*!***********************************!*\
-  !*** (webpack)/buildin/global.js ***!
-  \***********************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-var g;
-
-// This works in non-strict mode
-g = (function() {
-	return this;
-})();
-
-try {
-	// This works if eval is allowed (see CSP)
-	g = g || Function("return this")() || (1, eval)("this");
-} catch (e) {
-	// This works if the window reference is available
-	if (typeof window === "object") g = window;
-}
-
-// g can still be undefined, but nothing to do about it...
-// We return undefined, instead of nothing here, so it's
-// easier to handle this case. if(!global) { ...}
-
-module.exports = g;
-
-
-/***/ }),
-
 /***/ "./src/index.js":
 /*!**********************!*\
   !*** ./src/index.js ***!
@@ -1418,94 +1135,390 @@ module.exports = g;
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-/* WEBPACK VAR INJECTION */(function(global) {
+
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = void 0;
 
-var _structuredLogSeqSink = _interopRequireDefault(__webpack_require__(/*! structured-log-seq-sink */ "./node_modules/structured-log-seq-sink/dist/structured-log-seq-sink.js"));
+var _seqSink = _interopRequireDefault(__webpack_require__(/*! ./seq-sink */ "./src/seq-sink.js"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
 var structuredLog = __webpack_require__(/*! structured-log */ "./node_modules/structured-log/dist/structured-log.js");
 
-var log = structuredLog.configure().suppressErrors(false).writeTo(new structuredLog.ConsoleSink()).writeTo(new structuredLog.BatchedSink((0, _structuredLogSeqSink.default)({
-  url: "http://localhost:5001",
-  compact: true,
-  suppressErrors: false
-}), {
-  period: 5
-})).create();
+var log =
+/*#__PURE__*/
+function () {
+  function Log(options) {
+    var _this = this;
 
-log.attachErrors = function () {
-  if (typeof document != 'undefined') {
-    window.log = log;
+    _classCallCheck(this, Log);
 
-    if (window.lykke_log_deffered) {
-      window.removeEventListener('error', window.lykke_log_deffered_handler, true);
-      window.lykke_log_deffered.map(function (v) {
-        log.error(v, v.message);
-      });
-    }
+    this.endpoint = options.endpoint;
+    this.batchPeriod = options.batchPeriod;
+    this.log = structuredLog.configure().suppressErrors(false).writeTo(new structuredLog.BatchedSink((0, _seqSink.default)({
+      url: this.endpoint,
+      compact: true,
+      suppressErrors: false
+    }), {
+      period: this.batchPeriod
+    })).create();
+    ['info', 'warn', 'debug', 'verbose', 'warn', 'error'].forEach(function (method) {
+      Log.prototype[method] = function () {
+        var _this$log;
 
-    window.addEventListener('error', function (e) {
-      if (e.type == "error" && e.error) {
-        log.error(e.error, e.message);
-      } else if (e.type == "error") {
-        log.error(new Error("Failed to load ".concat(e.target.tagName, " ").concat(e.target.src)));
-      }
-
-      return true;
-    }, true);
-  } else if (typeof navigator != 'undefined' && navigator.product == 'ReactNative') {
-    global.log = log;
-    ErrorUtils.setGlobalHandler(function (e) {
-      log.error(e, e.message);
+        (_this$log = _this.log)[method].apply(_this$log, arguments);
+      };
     });
-  } else {//node
   }
-};
 
-log.takeOverConsole = function () {
-  var console = window.console;
-  if (!console) return;
+  _createClass(Log, [{
+    key: "attachErrors",
+    value: function attachErrors() {
+      var _this2 = this;
 
-  function intercept(method) {
-    var original = console[method];
+      if (typeof document != 'undefined') {
+        if (window.lykke_log_deffered) {
+          window.removeEventListener('error', window.lykke_log_deffered_handler, true);
+          window.lykke_log_deffered.map(function (v) {
+            _this2.log.error(v, v.message);
+          });
+        }
 
-    console[method] = function () {
-      // do sneaky stuff
-      method == "log" ? method = "info" : null;
-      method == "trace" ? method = "verbose" : null;
-      var message = Array.prototype.slice.apply(arguments).join(' ');
-      log[method](message);
+        window.addEventListener('error', function (e) {
+          if (e.type == "error" && e.error) {
+            this.log.error(e.error, e.message);
+          } else if (e.type == "error") {
+            this.log.error(new Error("Failed to load ".concat(e.target.tagName, " ").concat(e.target.src)));
+          }
 
-      if (original.apply) {
-        // Do this for normal browsers
-        original.apply(console, arguments);
-      } else {
-        // Do this for IE
-        original(message);
+          return true;
+        }, true);
+      } else if (typeof navigator != 'undefined' && navigator.product == 'ReactNative') {
+        ErrorUtils.setGlobalHandler(function (e) {
+          this.log.error(e, e.message);
+        });
+      } else {//node
       }
-    };
-  }
+    }
+  }, {
+    key: "takeOverConsole",
+    value: function takeOverConsole() {
+      var console = window.console;
+      var self = this;
+      if (!console) return;
 
-  var methods = ['log', 'warn', 'error', 'debug', 'info', 'trace'];
+      function intercept(method) {
+        var original = console[method];
 
-  for (var i = 0; i < methods.length; i++) {
-    intercept(methods[i]);
-  }
-};
+        console[method] = function () {
+          // do sneaky stuff
+          method == "log" ? method = "info" : null;
+          method == "trace" ? method = "verbose" : null;
+          var message = Array.prototype.slice.apply(arguments).join(' ');
+          self.log[method](message);
 
-log.attachErrors();
-log.takeOverConsole();
-window.log = log;
+          if (original.apply) {
+            // Do this for normal browsers
+            original.apply(console, arguments);
+          } else {
+            // Do this for IE
+            original(message);
+          }
+        };
+      }
+
+      var methods = ['log', 'warn', 'error', 'debug', 'info', 'trace'];
+
+      for (var i = 0; i < methods.length; i++) {
+        intercept(methods[i]);
+      }
+    }
+  }]);
+
+  return Log;
+}();
+
 var _default = log;
 exports.default = _default;
 module.exports = exports["default"];
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../node_modules/webpack/buildin/global.js */ "./node_modules/webpack/buildin/global.js")))
+
+/***/ }),
+
+/***/ "./src/seq-sink.js":
+/*!*************************!*\
+  !*** ./src/seq-sink.js ***!
+  \*************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = SeqSinkFactory;
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+function postToSeq(url, apiKey, compact, body, done) {
+  var apiKeyParameter = apiKey ? "?apiKey=".concat(apiKey) : '';
+  var promise = fetch("".concat(url, "/api/events/raw").concat(apiKeyParameter), {
+    headers: {
+      'content-type': compact ? 'application/vnd.serilog.clef' : 'application/json'
+    },
+    method: 'POST',
+    body: body
+  });
+  return !done ? promise : promise.then(function (response) {
+    return done(response);
+  });
+}
+
+function mapLogLevel(logLevel) {
+  // If the log level isn't numeric (structured-log < 0.1.0), return it as-is.
+  if (isNaN(logLevel)) {
+    return logLevel;
+  } // Parse bitfield log level (structured-log >= 0.1.0-alpha).
+
+
+  if (logLevel === 1) {
+    return 'Fatal';
+  } else if (logLevel === 3) {
+    return 'Error';
+  } else if (logLevel === 7) {
+    return 'Warning';
+  } else if (logLevel === 31) {
+    return 'Debug';
+  } else if (logLevel === 63) {
+    return 'Verbose';
+  } // Default to Information.
+
+
+  return 'Information';
+}
+
+function logSuppressedError(reason) {
+  if (typeof console !== 'undefined' && console.warn) {
+    console.warn('Suppressed error when logging to Seq: ' + reason);
+  }
+}
+
+var SeqSink =
+/*#__PURE__*/
+function () {
+  function SeqSink(options) {
+    var _this = this;
+
+    _classCallCheck(this, SeqSink);
+
+    this.url = null;
+    this.apiKey = null;
+    this.durable = false;
+    this.compact = false;
+    this.levelSwitch = null;
+    this.refreshLevelSwitchTimeoutId = null;
+    this.refreshLevelSwitchTimeoutInterval = 2 * 60 * 1000;
+    this.suppressErrors = true;
+
+    if (!options) {
+      throw new Error("'options' parameter is required.");
+    }
+
+    if (!options.url) {
+      throw new Error("'options.url' parameter is required.");
+    }
+
+    this.url = options.url.replace(/\/$/, '');
+    this.apiKey = options.apiKey;
+    this.levelSwitch = options.levelSwitch || null;
+    this.suppressErrors = options.suppressErrors !== false;
+
+    if (options.durable && typeof localStorage === 'undefined') {
+      if (typeof console !== 'undefined' && console.warn) {
+        console.warn("'options.durable' parameter was set to true, but 'localStorage' is not available.");
+      }
+
+      this.durable = false;
+    } else {
+      this.durable = !!options.durable;
+    }
+
+    this.compact = !!options.compact;
+
+    if (this.durable) {
+      var requests = {};
+
+      for (var i = 0; i < localStorage.length; ++i) {
+        var storageKey = localStorage.key(i);
+
+        if (storageKey.indexOf('structured-log-seq-sink') !== 0) {
+          continue;
+        }
+
+        var body = localStorage.getItem(storageKey);
+        requests[storageKey] = postToSeq(this.url, this.apiKey, this.compact, body).then(function () {
+          return localStorage.removeItem(k);
+        }).catch(function (reason) {
+          return _this.suppressErrors ? logSuppressedError(reason) : Promise.reject(reason);
+        });
+      }
+    }
+
+    if (this.levelSwitch !== null) {
+      this.refreshLevelSwitchTimeoutId = setTimeout(function () {
+        return _this.sendToServer([]);
+      }, this.refreshLevelSwitchTimeoutInterval);
+    }
+  }
+
+  _createClass(SeqSink, [{
+    key: "toString",
+    value: function toString() {
+      return 'SeqSink';
+    }
+  }, {
+    key: "emit",
+    value: function emit(events, done) {
+      var _this2 = this;
+
+      var filteredEvents = this.levelSwitch ? events.filter(function (e) {
+        return _this2.levelSwitch.isEnabled(e.level);
+      }) : events;
+
+      if (!filteredEvents.length) {
+        return done ? Promise.resolve().then(function () {
+          return done(null);
+        }) : Promise.resolve();
+      }
+
+      return this.sendToServer(filteredEvents, done);
+    }
+  }, {
+    key: "sendToServer",
+    value: function sendToServer(events, done) {
+      var _this3 = this;
+
+      var seqEvents = this.compact ? events.reduce(function (s, e) {
+        var mappedEvent = _objectSpread({
+          '@l': mapLogLevel(e.level),
+          '@mt': e.messageTemplate.raw,
+          '@t': e.timestamp
+        }, e.properties);
+
+        if (e.error instanceof Error && e.error.stack) {
+          mappedEvent['@x'] = e.error.stack;
+        }
+
+        return "".concat(s).concat(JSON.stringify(mappedEvent), "\n");
+      }, '').replace(/\s+$/g, '') : events.map(function (e) {
+        var mappedEvent = {
+          Level: mapLogLevel(e.level),
+          MessageTemplate: e.messageTemplate.raw,
+          Properties: e.properties,
+          Timestamp: e.timestamp
+        };
+
+        if (e.error instanceof Error && e.error.stack) {
+          mappedEvent.Exception = e.error.stack;
+        }
+
+        return mappedEvent;
+      });
+      var body = this.compact ? seqEvents : JSON.stringify({
+        Events: seqEvents
+      });
+      var storageKey;
+
+      if (this.durable) {
+        storageKey = "structured-log-seq-sink-".concat(new Date().getTime(), "-").concat(Math.floor(Math.random() * 1000000) + 1);
+        localStorage.setItem(storageKey, body);
+      }
+
+      return postToSeq(this.url, this.apiKey, this.compact, body, done).then(function (response) {
+        return response.json();
+      }).then(function (json) {
+        return _this3.updateLogLevel(json);
+      }).then(function () {
+        if (storageKey) localStorage.removeItem(storageKey);
+      }).catch(function (reason) {
+        return _this3.suppressErrors ? logSuppressedError(reason) : Promise.reject(reason);
+      });
+    }
+  }, {
+    key: "updateLogLevel",
+    value: function updateLogLevel(response) {
+      var _this4 = this;
+
+      if (!this.levelSwitch) return;
+
+      if (this.refreshLevelSwitchTimeoutId) {
+        clearTimeout(this.refreshLevelSwitchTimeoutId);
+        this.refreshLevelSwitchTimeoutId = setTimeout(function () {
+          return _this4.sendToServer([]);
+        }, this.refreshLevelSwitchTimeoutInterval);
+      }
+
+      if (response && response.MinimumLevelAccepted) {
+        switch (response.MinimumLevelAccepted) {
+          case 'Fatal':
+            this.levelSwitch.fatal();
+            break;
+
+          case 'Error':
+            this.levelSwitch.error();
+            break;
+
+          case 'Warning':
+            this.levelSwitch.warning();
+            break;
+
+          case 'Information':
+            this.levelSwitch.information();
+            break;
+
+          case 'Debug':
+            this.levelSwitch.debug();
+            break;
+
+          case 'Verbose':
+            this.levelSwitch.verbose();
+            break;
+        }
+      }
+    }
+  }, {
+    key: "flush",
+    value: function flush() {
+      return Promise.resolve();
+    }
+  }]);
+
+  return SeqSink;
+}();
+
+function SeqSinkFactory(options) {
+  return new SeqSink(options);
+}
+
+module.exports = exports["default"];
 
 /***/ })
 

@@ -1,15 +1,13 @@
 {
   "name": "lykke-log",
   "version": "1.0.3",
-  "description": "Produce universal library with webpack and es6",
   "main": "lib/lykke-log.js",
   "scripts": {
     "build": "webpack --env dev && webpack --env build && npm run test",
     "dev": "webpack --progress --colors --watch --env dev"
   },
   "dependencies": {
-    "structured-log": "^0.2.0",
-    "structured-log-seq-sink": "^0.4.1"
+    "structured-log": "^0.2.0"
   },
   "keywords": [],
   "devDependencies": {
@@ -19,6 +17,8 @@
     "babel-eslint": "^8.0.3",
     "babel-loader": "^8.0.0-beta.4",
     "babel-plugin-add-module-exports": "^0.2.1",
+    "babel-plugin-transform-class-properties": "^6.11.5",
+    "@babel/plugin-transform-destructuring": "^7.0.0",
     "babel-preset-env": "^7.0.0-beta.3",
     "babel-register": "^7.0.0-beta.3",
     "uglifyjs-webpack-plugin": "^1.2.7",
