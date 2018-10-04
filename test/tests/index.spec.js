@@ -93,7 +93,7 @@ describe('e2e loging', () => {
 
                         dump("nginx container deleted");
                         browser.close();
-                        dump("browser closed").start();
+                        dump("browser closed");
                         //spinner.stop();
                         done();
 
