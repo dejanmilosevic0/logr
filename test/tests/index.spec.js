@@ -5,7 +5,11 @@ const docker = new Docker({ socketPath: '/var/run/docker.sock' });
 const ora = require('ora');
 
 var test_dotnet, test_nginx, browser;
-const spinner = ora().start();
+//const spinner = ora().start();
+
+function dump(m) {
+    // spinner.info(m).start();
+}
 
 describe('e2e loging', () => {
     test('client logs to dotnet server correctly', async (done) => {
@@ -46,7 +50,7 @@ describe('e2e loging', () => {
             .then(container => container.start({}))
             .then(container => {
 
-                spinner.info("dotnet container started").start();
+                dump("dotnet container started");
                 test_dotnet = container;
 
                 return container.logs({
@@ -60,7 +64,7 @@ describe('e2e loging', () => {
 
                     if (info.toString('utf8').includes("Now listening on")) {
 
-                        spinner.info("dotnet application started listening").start();
+                        dump("dotnet application started listening");
 
                         browser = await puppeteer.launch({
                             args: [
@@ -68,29 +72,29 @@ describe('e2e loging', () => {
                                 '--disable-setuid-sandbox'
                             ]
                         });
-                        spinner.info("start puppeteer").start();
+                        dump("start puppeteer");
                         const page = await browser.newPage();
 
                         await page.goto('http://localhost:5003/test/index.html');
 
-                        spinner.info("page from nginx container loaded").start();
-                        spinner.info("page loging against dotnet server").start();
+                        dump("page from nginx container loaded");
+                        dump("page loging against dotnet server");
                     }
 
                     if (info.toString('utf8').includes("teststring")) {
-                        spinner.info("log message matched").start()
-                        spinner.info("test succeded").start()
+                        dump("log message matched")
+                        dump("test succeded")
 
-                        spinner.info("end of test").start()
+                        dump("end of test")
                         test_dotnet.delete({ force: true })
 
-                        spinner.info("dotnet container deleted").start();
+                        dump("dotnet container deleted");
                         test_nginx.delete({ force: true })
 
-                        spinner.info("nginx container deleted").start();
+                        dump("nginx container deleted");
                         browser.close();
-                        spinner.info("browser closed").start();
-                        spinner.stop();
+                        dump("browser closed").start();
+                        //spinner.stop();
                         done();
 
                     }
@@ -98,9 +102,9 @@ describe('e2e loging', () => {
 
 
                 })
-                stream.on('error', err => spinner.info(err.toString('utf8')).start())
+                stream.on('error', err => dump(err.toString('utf8')))
             })
-            .catch(error => spinner.info(error).start());
+            .catch(error => dump(error));
 
         await docker.container.create({
             Image: 'nginx:latest',
@@ -133,7 +137,7 @@ describe('e2e loging', () => {
         })
             .then(container => container.start({})).then(container => {
 
-                spinner.info("nginx container started").start();
+                dump("nginx container started");
                 test_nginx = container;
 
             })
