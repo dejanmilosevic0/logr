@@ -3,11 +3,24 @@ import seqSink from './seq-sink'
 
 const log = class Log {
     constructor(options) {
+
+        if (!options.endpoint) {
+            throw new Error(`'options.endpoint' parameter is required.`);
+        }
+        if (!options.batchPeriod) {
+            throw new Error(`'options.batchPeriod' parameter is required.`);
+        }
+        if (!options.minLevel) {
+            throw new Error(`'options.minlevel' parameter is required.`);
+        }
+
         this.endpoint = options.endpoint;
         this.batchPeriod = options.batchPeriod;
+        this.minLevel = options.minLevel;
 
         this.log = structuredLog.configure()
             .suppressErrors(false)
+            .minLevel(this.minLevel)
             .writeTo(new structuredLog.BatchedSink(seqSink({
                 url: this.endpoint,
                 compact: true,
@@ -57,9 +70,11 @@ const log = class Log {
         }
     }
 
-    takeOverConsole() {
+    takeOverConsole(template = null) {
         var console = window.console
         var self = this;
+        if (!template)
+            template = (message) => message;
         if (!console) return
         function intercept(method) {
             var original = console[method]
@@ -68,7 +83,7 @@ const log = class Log {
                 method == "log" ? method = "info" : null;
                 method == "trace" ? method = "verbose" : null;
                 var message = Array.prototype.slice.apply(arguments).join(' ')
-                self.log[method](message);
+                self.log[method](template(message, method));
 
                 if (original.apply) {
                     // Do this for normal browsers

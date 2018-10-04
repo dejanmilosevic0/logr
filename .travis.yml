@@ -14,4 +14,11 @@ script:
    - ./create_test_network.sh
    - ./test.sh
 
+before_deploy:
+  - cd lykke-log
+deploy:
+  provider: npm
+  email: dejan.mil.kg@gmail.com
+  api_key: b6a8b7c7-a83d-423b-b649-1aa707d1732a
 
+  

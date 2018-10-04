@@ -71,7 +71,7 @@ describe('e2e loging', () => {
                         spinner.info("start puppeteer").start();
                         const page = await browser.newPage();
 
-                        await page.goto('http://localhost:5003/test-html/index.html');
+                        await page.goto('http://localhost:5003/test/index.html');
 
                         spinner.info("page from nginx container loaded").start();
                         spinner.info("page loging against dotnet server").start();
