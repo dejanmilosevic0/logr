@@ -1,0 +1,38 @@
+<html>
+
+<head>
+    <script>
+        var lykke_log_deffered = [];
+        var lykke_log_deffered_handler = function (e) {
+
+            lykke_log_deffered.push(new Error(`Failed to load ${e.target.tagName} ${e.target.src}`))
+        }
+        window.addEventListener('error', lykke_log_deffered_handler, true);
+    </script>
+
+
+</head>
+
+<body>
+
+
+</body>
+
+<script src="/lykke-log/lib/lykkeLog.js"></script>
+
+<script>
+    var options = {
+        endpoint: "http://localhost:5001",
+        //endpoint: "http://log.revolution.connecting.rs:5001",
+        batchPeriod: 1,
+        minLevel: "information"
+    }
+    var log = new lykkeLog(options);
+
+    setInterval(() => {
+        log.info("teststring");
+    }, 5000)
+
+</script>
+
+</html>
