@@ -1,6 +1,6 @@
 {
   "name": "lykke-log",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "main": "lib/lykkeLog.js",
   "scripts": {
     "build": "webpack --env dev && webpack --env build && npm run test",

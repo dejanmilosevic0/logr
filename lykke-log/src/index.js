@@ -28,7 +28,7 @@ const log = class Log {
             }), { period: this.batchPeriod }))
             .create();
 
-        ['info', 'warn', 'debug', 'verbose', 'warn', 'error'].forEach((method) => {
+        ['info', 'warn', 'debug', 'verbose', 'warn', 'error','fatal'].forEach((method) => {
             Log.prototype[method] = (...args) => {
                 this.log[method](...args);
             }
@@ -36,24 +36,30 @@ const log = class Log {
 
     }
 
-    attachErrors() {
+    attachErrors(template = null) {
+        if (!template)
+            template = (message) => ([message]);
+
         if (typeof document != 'undefined') {
 
             if (window.lykke_log_deffered) {
                 window.removeEventListener('error', window.lykke_log_deffered_handler, true);
                 window.lykke_log_deffered.map((v) => {
 
-                    this.log.error(v, v.message);
+                    this.log.error(v, ...template(v.message, "error"));
 
                 })
             }
             window.addEventListener('error', function (e) {
 
                 if (e.type == "error" && e.error) {
-                    this.log.error(e.error, e.message)
+                    this.log.error(e.error, ...template(e.message, "error"))
                 }
                 else if (e.type == "error") {
-                    this.log.error(new Error(`Failed to load ${e.target.tagName} ${e.target.src}`));
+                    var target;
+                    e.target.tagName == "SCRIPT" || e.target.tagName == "IMG" ? target = e.target.src : null;
+                    e.target.tagName == "LINK" ? target = e.target.href : null
+                    this.log.error(new Error(`Failed to load ${e.target.tagName} ${target}`), ...template(`Failed to load ${e.target.tagName} ${e.target.src}`, "error"));
                 }
                 return true;
             }, true);
@@ -62,7 +68,7 @@ const log = class Log {
         else if (typeof navigator != 'undefined' && navigator.product == 'ReactNative') {
 
             ErrorUtils.setGlobalHandler(function (e) {
-                this.log.error(e, e.message);
+                this.log.error(e, ...template(e.message, "error"));
             });
         }
         else {
@@ -74,7 +80,7 @@ const log = class Log {
         var console = window.console
         var self = this;
         if (!template)
-            template = (message) => message;
+            template = (message) => ([message]);
         if (!console) return
         function intercept(method) {
             var original = console[method]

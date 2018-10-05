@@ -1192,7 +1192,7 @@ function () {
     }), {
       period: this.batchPeriod
     })).create();
-    ['info', 'warn', 'debug', 'verbose', 'warn', 'error'].forEach(function (method) {
+    ['info', 'warn', 'debug', 'verbose', 'warn', 'error', 'fatal'].forEach(function (method) {
       Log.prototype[method] = function () {
         var _this$log;
 
@@ -1206,26 +1206,43 @@ function () {
     value: function attachErrors() {
       var _this2 = this;
 
+      var template = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+      if (!template) template = function template(message) {
+        return [message];
+      };
+
       if (typeof document != 'undefined') {
         if (window.lykke_log_deffered) {
           window.removeEventListener('error', window.lykke_log_deffered_handler, true);
           window.lykke_log_deffered.map(function (v) {
-            _this2.log.error(v, v.message);
+            var _this2$log;
+
+            (_this2$log = _this2.log).error.apply(_this2$log, [v].concat(_toConsumableArray(template(v.message, "error"))));
           });
         }
 
         window.addEventListener('error', function (e) {
           if (e.type == "error" && e.error) {
-            this.log.error(e.error, e.message);
+            var _this$log2;
+
+            (_this$log2 = this.log).error.apply(_this$log2, [e.error].concat(_toConsumableArray(template(e.message, "error"))));
           } else if (e.type == "error") {
-            this.log.error(new Error("Failed to load ".concat(e.target.tagName, " ").concat(e.target.src)));
+            var _this$log3;
+
+            var target;
+            e.target.tagName == "SCRIPT" || e.target.tagName == "IMG" ? target = e.target.src : null;
+            e.target.tagName == "LINK" ? target = e.target.href : null;
+
+            (_this$log3 = this.log).error.apply(_this$log3, [new Error("Failed to load ".concat(e.target.tagName, " ").concat(target))].concat(_toConsumableArray(template("Failed to load ".concat(e.target.tagName, " ").concat(e.target.src), "error"))));
           }
 
           return true;
         }, true);
       } else if (typeof navigator != 'undefined' && navigator.product == 'ReactNative') {
         ErrorUtils.setGlobalHandler(function (e) {
-          this.log.error(e, e.message);
+          var _this$log4;
+
+          (_this$log4 = this.log).error.apply(_this$log4, [e].concat(_toConsumableArray(template(e.message, "error"))));
         });
       } else {//node
       }
@@ -1237,7 +1254,7 @@ function () {
       var console = window.console;
       var self = this;
       if (!template) template = function template(message) {
-        return message;
+        return [message];
       };
       if (!console) return;
 

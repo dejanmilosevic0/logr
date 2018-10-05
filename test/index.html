@@ -4,12 +4,15 @@
     <script>
         var lykke_log_deffered = [];
         var lykke_log_deffered_handler = function (e) {
+            var target;
+            e.target.tagName == "SCRIPT" || e.target.tagName == "IMG" ? target = e.target.src : null;
+            e.target.tagName == "LINK" ? target = e.target.href : null
 
-            lykke_log_deffered.push(new Error(`Failed to load ${e.target.tagName} ${e.target.src}`))
+            lykke_log_deffered.push(new Error(`Failed to load ${e.target.tagName} ${target}`))
         }
         window.addEventListener('error', lykke_log_deffered_handler, true);
     </script>
-
+    <link href="/test-error.css" rel="stylesheet">
 
 </head>
 
@@ -19,7 +22,7 @@
 </body>
 
 <script src="/lykke-log/lib/lykkeLog.js"></script>
-
+<script src="/test-error.js"></script>
 <script>
     var options = {
         endpoint: "http://localhost:5001",
@@ -29,6 +32,10 @@
     }
     var log = new lykkeLog(options);
     log.takeOverConsole((message, method) => {
+        return [`[${method.toUpperCase()}] {test}: ${message}`, "Hello"];
+    });
+
+    log.attachErrors((message, method) => {
         return [`[${method.toUpperCase()}] {test}: ${message}`, "Hello"];
     });
 
