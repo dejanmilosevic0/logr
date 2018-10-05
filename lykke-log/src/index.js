@@ -83,7 +83,7 @@ const log = class Log {
                 method == "log" ? method = "info" : null;
                 method == "trace" ? method = "verbose" : null;
                 var message = Array.prototype.slice.apply(arguments).join(' ')
-                self.log[method](template(message, method));
+                self.log[method](...template(message, method));
 
                 if (original.apply) {
                     // Do this for normal browsers

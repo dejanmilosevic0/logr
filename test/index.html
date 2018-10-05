@@ -22,15 +22,19 @@
 
 <script>
     var options = {
-        endpoint: "http://localhost:5001",
-        //endpoint: "http://log.revolution.connecting.rs:5001",
+        //endpoint: "http://localhost:5001",
+        endpoint: "http://log.revolution.connecting.rs",
         batchPeriod: 1,
         minLevel: "information"
     }
     var log = new lykkeLog(options);
+    log.takeOverConsole((message, method) => {
+        return [`[${method.toUpperCase()}] {test}: ${message}`, "Hello"];
+    });
 
     setInterval(() => {
         log.info("teststring");
+        //console.log("teststring");
     }, 5000)
 
 </script>

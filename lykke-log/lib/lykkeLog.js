@@ -1146,6 +1146,14 @@ var _seqSink = _interopRequireDefault(__webpack_require__(/*! ./seq-sink */ "./s
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
+
+function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -1237,11 +1245,14 @@ function () {
         var original = console[method];
 
         console[method] = function () {
+          var _self$log;
+
           // do sneaky stuff
           method == "log" ? method = "info" : null;
           method == "trace" ? method = "verbose" : null;
           var message = Array.prototype.slice.apply(arguments).join(' ');
-          self.log[method](template(message, method));
+
+          (_self$log = self.log)[method].apply(_self$log, _toConsumableArray(template(message, method)));
 
           if (original.apply) {
             // Do this for normal browsers
@@ -1295,6 +1306,7 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
+//Here need to fork and implement offline behaviour
 function postToSeq(url, apiKey, compact, body, done) {
   var apiKeyParameter = apiKey ? "?apiKey=".concat(apiKey) : '';
   var promise = fetch("".concat(url, "/api/events/raw").concat(apiKeyParameter), {

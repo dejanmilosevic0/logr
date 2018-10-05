@@ -1,3 +1,5 @@
+//Here need to fork and implement offline behaviour
+
 function postToSeq(url, apiKey, compact, body, done) {
     const apiKeyParameter = apiKey ? `?apiKey=${apiKey}` : '';
     const promise = fetch(`${url}/api/events/raw${apiKeyParameter}`, {
