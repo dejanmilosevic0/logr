@@ -3,6 +3,6 @@
 import lykkeLogWebpack from './src/lykke-log-webpack.js';
 import lykkeLog from './src/lykke-log';
 
-export const lykkeLog = lykkeLog;
 
-export const lykkeLogWebpack = lykkeLogWebpack;
+module.exports.webpackPlugin = lykkeLogWebpack;
+module.exports.lykkeLog = lykkeLog;
