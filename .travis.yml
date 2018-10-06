@@ -13,9 +13,11 @@ script:
    - cd .. && ./create_test_volume.sh
    - ./create_test_network.sh
    - ./test.sh
-
+env:
+  - TEST_DIR=lykke-log
+  - TEST_DIR=lykke-log-webpack
 before_deploy:
-  - cd lykke-log
+  - cd $TEST_DIR
 deploy:
   provider: npm
   email: dejan.mil.kg@gmail.com
