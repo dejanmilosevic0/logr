@@ -1,12 +1,9 @@
 sudo: required
-
 services:
   - docker
-
 language: node_js
 node_js: 
   - "stable"
-
 script: 
    - cd lykke-log  && npm install
    - cd .. && cd test && npm install
@@ -24,6 +21,3 @@ deploy:
   api_key: b6a8b7c7-a83d-423b-b649-1aa707d1732a
   on:
    branch: dejan
-
-
-  
