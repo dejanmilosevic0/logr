@@ -52,4 +52,4 @@ class LykkeLogWebpack {
   }
 }
 
-export default LykkeLogWebpack;
+module.exports = LykkeLogWebpack;
