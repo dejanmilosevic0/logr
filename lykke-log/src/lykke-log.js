@@ -21,6 +21,7 @@ const log = class Log {
         this.log = structuredLog.configure()
             .suppressErrors(false)
             .minLevel(this.minLevel)
+            .writeTo(new structuredLog.ConsoleSink())
             .writeTo(new structuredLog.BatchedSink(seqSink({
                 url: this.endpoint,
                 compact: true,
@@ -28,7 +29,7 @@ const log = class Log {
             }), { period: this.batchPeriod }))
             .create();
 
-        ['info', 'warn', 'debug', 'verbose', 'warn', 'error','fatal'].forEach((method) => {
+        ['info', 'warn', 'debug', 'verbose', 'warn', 'error', 'fatal'].forEach((method) => {
             Log.prototype[method] = (...args) => {
                 this.log[method](...args);
             }
@@ -77,13 +78,17 @@ const log = class Log {
     }
 
     takeOverConsole(template = null) {
-        var console = window.console
+        if (window.lykke_console_deffered) {
+
+        }
+        //var console;
+        //window.lykke_console ? console = window.lykke_console : console = window.console;
         var self = this;
         if (!template)
             template = (message) => ([message]);
         if (!console) return
         function intercept(method) {
-            var original = console[method]
+            //var original = console[method]
             console[method] = function () {
                 // do sneaky stuff
                 method == "log" ? method = "info" : null;
@@ -91,13 +96,13 @@ const log = class Log {
                 var message = Array.prototype.slice.apply(arguments).join(' ')
                 self.log[method](...template(message, method));
 
-                if (original.apply) {
+                /*if (original.apply) {
                     // Do this for normal browsers
                     original.apply(console, arguments)
                 } else {
                     // Do this for IE
                     original(message);
-                }
+                }*/
             }
         }
         var methods = ['log', 'warn', 'error', 'debug', 'info', 'trace']
