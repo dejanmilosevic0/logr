@@ -91,7 +91,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./src/index.js");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./src/lykke-log.js");
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -1127,10 +1127,10 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 /***/ }),
 
-/***/ "./src/index.js":
-/*!**********************!*\
-  !*** ./src/index.js ***!
-  \**********************/
+/***/ "./src/lykke-log.js":
+/*!**************************!*\
+  !*** ./src/lykke-log.js ***!
+  \**************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -1185,7 +1185,7 @@ function () {
     this.endpoint = options.endpoint;
     this.batchPeriod = options.batchPeriod;
     this.minLevel = options.minLevel;
-    this.log = structuredLog.configure().suppressErrors(false).minLevel(this.minLevel).writeTo(new structuredLog.BatchedSink((0, _seqSink.default)({
+    this.log = structuredLog.configure().suppressErrors(false).minLevel(this.minLevel).writeTo(new structuredLog.ConsoleSink()).writeTo(new structuredLog.BatchedSink((0, _seqSink.default)({
       url: this.endpoint,
       compact: true,
       suppressErrors: false
@@ -1251,7 +1251,11 @@ function () {
     key: "takeOverConsole",
     value: function takeOverConsole() {
       var template = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-      var console = window.console;
+
+      if (window.lykke_console_deffered) {} //var console;
+      //window.lykke_console ? console = window.lykke_console : console = window.console;
+
+
       var self = this;
       if (!template) template = function template(message) {
         return [message];
@@ -1259,8 +1263,7 @@ function () {
       if (!console) return;
 
       function intercept(method) {
-        var original = console[method];
-
+        //var original = console[method]
         console[method] = function () {
           var _self$log;
 
@@ -1270,14 +1273,14 @@ function () {
           var message = Array.prototype.slice.apply(arguments).join(' ');
 
           (_self$log = self.log)[method].apply(_self$log, _toConsumableArray(template(message, method)));
-
-          if (original.apply) {
-            // Do this for normal browsers
-            original.apply(console, arguments);
+          /*if (original.apply) {
+              // Do this for normal browsers
+              original.apply(console, arguments)
           } else {
-            // Do this for IE
-            original(message);
-          }
+              // Do this for IE
+              original(message);
+          }*/
+
         };
       }
 
