@@ -1182,6 +1182,16 @@ function () {
       throw new Error("'options.minlevel' parameter is required.");
     }
 
+    if (window.lykke_log_deffered && window.lykke_log_deffered.errors.length > 0) {
+      window.removeEventListener('error', window.lykke_log_deffered_handler, true);
+    }
+
+    if (window.lykke_log_deffered && window.lykke_log_deffered.console_original) {
+      for (var i = 0; i < lykke_log_deffered.methods.length; i++) {
+        console[lykke_log_deffered.methods[i]] = lykke_log_deffered.console_original[lykke_log_deffered.methods[i]];
+      }
+    }
+
     this.endpoint = options.endpoint;
     this.batchPeriod = options.batchPeriod;
     this.minLevel = options.minLevel;
@@ -1212,9 +1222,8 @@ function () {
       };
 
       if (typeof document != 'undefined') {
-        if (window.lykke_log_deffered) {
-          window.removeEventListener('error', window.lykke_log_deffered_handler, true);
-          window.lykke_log_deffered.map(function (v) {
+        if (window.lykke_log_deffered && window.lykke_log_deffered.errors.length > 0) {
+          window.lykke_log_deffered.errors.map(function (v) {
             var _this2$log;
 
             (_this2$log = _this2.log).error.apply(_this2$log, [v].concat(_toConsumableArray(template(v.message, "error"))));

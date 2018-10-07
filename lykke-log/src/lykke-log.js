@@ -14,6 +14,14 @@ const log = class Log {
             throw new Error(`'options.minlevel' parameter is required.`);
         }
 
+        if (window.lykke_log_deffered && window.lykke_log_deffered.errors.length > 0) {
+            window.removeEventListener('error', window.lykke_log_deffered_handler, true);
+        }
+        if (window.lykke_log_deffered && window.lykke_log_deffered.console_original) {
+            for (var i = 0; i < lykke_log_deffered.methods.length; i++)
+                console[lykke_log_deffered.methods[i]] = lykke_log_deffered.console_original[lykke_log_deffered.methods[i]];
+        }
+
         this.endpoint = options.endpoint;
         this.batchPeriod = options.batchPeriod;
         this.minLevel = options.minLevel;
@@ -44,7 +52,7 @@ const log = class Log {
         if (typeof document != 'undefined') {
 
             if (window.lykke_log_deffered && window.lykke_log_deffered.errors.length > 0) {
-                window.removeEventListener('error', window.lykke_log_deffered_handler, true);
+
                 window.lykke_log_deffered.errors.map((v) => {
 
                     this.log.error(v, ...template(v.message, "error"));
