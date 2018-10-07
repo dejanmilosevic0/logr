@@ -14,8 +14,8 @@ const log = class Log {
             throw new Error(`'options.minlevel' parameter is required.`);
         }
 
-        if (window.lykke_log_deffered && window.lykke_log_deffered.errors.length > 0) {
-            window.removeEventListener('error', window.lykke_log_deffered_handler, true);
+        if (window.lykke_log_deffered && window.lykke_log_deffered.lykke_log_deffered_error_handler) {
+            window.removeEventListener('error', window.lykke_log_deffered.lykke_log_deffered_error_handler, true);
         }
         if (window.lykke_log_deffered && window.lykke_log_deffered.console_original) {
             for (var i = 0; i < lykke_log_deffered.methods.length; i++)
@@ -86,14 +86,18 @@ const log = class Log {
     }
 
     takeOverConsole(template = null) {
-        if (window.lykke_console_deffered) {
 
-        }
-        //var console;
-        //window.lykke_console ? console = window.lykke_console : console = window.console;
         var self = this;
         if (!template)
             template = (message) => ([message]);
+        if (window.lykke_log_deffered && window.lykke_log_deffered.console.length > 0) {
+            window.lykke_log_deffered.console.map((v) => {
+
+                var message = Array.prototype.slice.apply(v.arguments).join(' ')
+                self.log[v.method](...template(message, v.method));
+
+            })
+        }
         if (!console) return
         function intercept(method) {
             //var original = console[method]

@@ -1182,8 +1182,8 @@ function () {
       throw new Error("'options.minlevel' parameter is required.");
     }
 
-    if (window.lykke_log_deffered && window.lykke_log_deffered.errors.length > 0) {
-      window.removeEventListener('error', window.lykke_log_deffered_handler, true);
+    if (window.lykke_log_deffered && window.lykke_log_deffered.lykke_log_deffered_error_handler) {
+      window.removeEventListener('error', window.lykke_log_deffered.lykke_log_deffered_error_handler, true);
     }
 
     if (window.lykke_log_deffered && window.lykke_log_deffered.console_original) {
@@ -1260,28 +1260,34 @@ function () {
     key: "takeOverConsole",
     value: function takeOverConsole() {
       var template = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-
-      if (window.lykke_console_deffered) {} //var console;
-      //window.lykke_console ? console = window.lykke_console : console = window.console;
-
-
       var self = this;
       if (!template) template = function template(message) {
         return [message];
       };
+
+      if (window.lykke_log_deffered && window.lykke_log_deffered.console.length > 0) {
+        window.lykke_log_deffered.console.map(function (v) {
+          var _self$log;
+
+          var message = Array.prototype.slice.apply(v.arguments).join(' ');
+
+          (_self$log = self.log)[v.method].apply(_self$log, _toConsumableArray(template(message, v.method)));
+        });
+      }
+
       if (!console) return;
 
       function intercept(method) {
         //var original = console[method]
         console[method] = function () {
-          var _self$log;
+          var _self$log2;
 
           // do sneaky stuff
           method == "log" ? method = "info" : null;
           method == "trace" ? method = "verbose" : null;
           var message = Array.prototype.slice.apply(arguments).join(' ');
 
-          (_self$log = self.log)[method].apply(_self$log, _toConsumableArray(template(message, method)));
+          (_self$log2 = self.log)[method].apply(_self$log2, _toConsumableArray(template(message, method)));
           /*if (original.apply) {
               // Do this for normal browsers
               original.apply(console, arguments)

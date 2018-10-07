@@ -19,11 +19,12 @@
                 console[method] = function () {
 
                     var message = Array.prototype.slice.apply(arguments).join(' ')
-
+                    method == "log" ? method = "info" : null;
+                    method == "trace" ? method = "verbose" : null;
                     if (lykke_log_deffered.console_original[method]) {
                         // Do this for normal browsers
                         lykke_log_deffered.console_original[method].apply(console, arguments)
-                        lykke_log_deffered.console.push(arguments);
+                        lykke_log_deffered.console.push({ method: method, arguments: arguments });
                     } else {
                         // Do this for IE
                         lykke_log_deffered.console_original[method](message);
