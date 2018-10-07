@@ -2,15 +2,44 @@
 
 <head>
     <script>
-        var lykke_log_deffered = [];
-        var lykke_log_deffered_handler = function (e) {
-            var target;
-            e.target.tagName == "SCRIPT" || e.target.tagName == "IMG" ? target = e.target.src : null;
-            e.target.tagName == "LINK" ? target = e.target.href : null
+        var lykke_log_deffered = {
+            errors: [],
+            console: [],
+            console_original: {},
+            lykke_log_deffered_error_handler: function (e) {
+                var target;
+                e.target.tagName == "SCRIPT" || e.target.tagName == "IMG" ? target = e.target.src : null;
+                e.target.tagName == "LINK" ? target = e.target.href : null
 
-            lykke_log_deffered.push(new Error(`Failed to load ${e.target.tagName} ${target}`))
-        }
-        window.addEventListener('error', lykke_log_deffered_handler, true);
+                lykke_log_deffered.errors.push(new Error(`Failed to load ${e.target.tagName} ${target}`))
+            },
+            console_intercept: function (method) {
+                lykke_log_deffered.console_original[method] = console[method]
+                console[method] = function () {
+
+                    var message = Array.prototype.slice.apply(arguments).join(' ')
+
+                    if (lykke_log_deffered.console_original[method]) {
+                        // Do this for normal browsers
+                        lykke_log_deffered.console_original[method](console, arguments)
+                        lykke_log_deffered.push(arguments);
+                    } else {
+                        // Do this for IE
+                        lykke_log_deffered.console_original[method](message);
+                        lykke_log_deffered.push(message);
+                    }
+                }
+            }
+
+
+        };
+        var methods = ['log', 'warn', 'error', 'debug', 'info', 'trace']
+        for (var i = 0; i < methods.length; i++)
+            lykke_log_deffered.console_intercept(methods[i])
+        window.addEventListener('error', lykke_log_deffered.lykke_log_error_deffered_handler, true);
+
+
+
     </script>
     <link href="/test-error.css" rel="stylesheet">
 

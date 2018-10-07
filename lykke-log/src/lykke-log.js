@@ -43,9 +43,9 @@ const log = class Log {
 
         if (typeof document != 'undefined') {
 
-            if (window.lykke_log_deffered) {
+            if (window.lykke_log_deffered && window.lykke_log_deffered.errors.length > 0) {
                 window.removeEventListener('error', window.lykke_log_deffered_handler, true);
-                window.lykke_log_deffered.map((v) => {
+                window.lykke_log_deffered.errors.map((v) => {
 
                     this.log.error(v, ...template(v.message, "error"));
 

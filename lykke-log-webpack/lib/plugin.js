@@ -24,15 +24,21 @@ function createTag(script) {
 class LykkeLogWebpack {
   constructor(options) {
     // this.options = normalizeOptions(options);
-    this.script = ` var lykke_log_deffered = [];
-       var lykke_log_deffered_handler = function (e) {
-           var target;
-           e.target.tagName == "SCRIPT" || e.target.tagName == "IMG" ? target = e.target.src : null;
-           e.target.tagName == "LINK" ? target = e.target.href : null
-
-           lykke_log_deffered.push(new Error(\`Failed to load \${e.target.tagName} \${target}\`))
-       }
-       window.addEventListener('error', lykke_log_deffered_handler, true);`;
+    this.script = `for (var lykke_log_deffered = {errors:[], console:[], console_original:{}, lykke_log_deffered_error_handler:function(a) {
+      var b;
+      "SCRIPT" == a.target.tagName || "IMG" == a.target.tagName ? b = a.target.src : null;
+      "LINK" == a.target.tagName ? b = a.target.href : null;
+      lykke_log_deffered.errors.push(Error("Failed to load " + a.target.tagName + " " + b));
+    }, console_intercept:function(a) {
+      lykke_log_deffered.console_original[a] = console[a];
+      console[a] = function() {
+        var b = Array.prototype.slice.apply(arguments).join(" ");
+        lykke_log_deffered.console_original[a] ? (lykke_log_deffered.console_original[a](console, arguments), lykke_log_deffered.push(arguments)) : (lykke_log_deffered.console_original[a](b), lykke_log_deffered.push(b));
+      };
+    }}, methods = "log warn error debug info trace".split(" "), i = 0; i < methods.length; i++) {
+      lykke_log_deffered.console_intercept(methods[i]);
+    }
+    window.addEventListener("error", lykke_log_deffered.lykke_log_error_deffered_handler, !0);`;
   }
   apply(compiler) {
     //const options = this.options;
