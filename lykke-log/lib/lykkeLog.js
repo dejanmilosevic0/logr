@@ -1214,44 +1214,43 @@ function () {
   _createClass(Log, [{
     key: "attachErrors",
     value: function attachErrors() {
-      var _this2 = this;
-
       var template = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
       if (!template) template = function template(message) {
         return [message];
       };
+      var self = this;
 
       if (typeof document != 'undefined') {
         if (window.lykke_log_deffered && window.lykke_log_deffered.errors.length > 0) {
           window.lykke_log_deffered.errors.map(function (v) {
-            var _this2$log;
+            var _self$log;
 
-            (_this2$log = _this2.log).error.apply(_this2$log, [v].concat(_toConsumableArray(template(v.message, "error"))));
+            (_self$log = self.log).error.apply(_self$log, [v].concat(_toConsumableArray(template(v.message, "error"))));
           });
         }
 
         window.addEventListener('error', function (e) {
           if (e.type == "error" && e.error) {
-            var _this$log2;
+            var _self$log2;
 
-            (_this$log2 = this.log).error.apply(_this$log2, [e.error].concat(_toConsumableArray(template(e.message, "error"))));
+            (_self$log2 = self.log).error.apply(_self$log2, [e.error].concat(_toConsumableArray(template(e.message, "error"))));
           } else if (e.type == "error") {
-            var _this$log3;
+            var _self$log3;
 
             var target;
             e.target.tagName == "SCRIPT" || e.target.tagName == "IMG" ? target = e.target.src : null;
             e.target.tagName == "LINK" ? target = e.target.href : null;
 
-            (_this$log3 = this.log).error.apply(_this$log3, [new Error("Failed to load ".concat(e.target.tagName, " ").concat(target))].concat(_toConsumableArray(template("Failed to load ".concat(e.target.tagName, " ").concat(e.target.src), "error"))));
+            (_self$log3 = self.log).error.apply(_self$log3, [new Error("Failed to load ".concat(e.target.tagName, " ").concat(target))].concat(_toConsumableArray(template("Failed to load ".concat(e.target.tagName, " ").concat(e.target.src), "error"))));
           }
 
           return true;
         }, true);
       } else if (typeof navigator != 'undefined' && navigator.product == 'ReactNative') {
         ErrorUtils.setGlobalHandler(function (e) {
-          var _this$log4;
+          var _self$log4;
 
-          (_this$log4 = this.log).error.apply(_this$log4, [e].concat(_toConsumableArray(template(e.message, "error"))));
+          (_self$log4 = self.log).error.apply(_self$log4, [e].concat(_toConsumableArray(template(e.message, "error"))));
         });
       } else {//node
       }
@@ -1267,11 +1266,11 @@ function () {
 
       if (window.lykke_log_deffered && window.lykke_log_deffered.console.length > 0) {
         window.lykke_log_deffered.console.map(function (v) {
-          var _self$log;
+          var _self$log5;
 
           var message = Array.prototype.slice.apply(v.arguments).join(' ');
 
-          (_self$log = self.log)[v.method].apply(_self$log, _toConsumableArray(template(message, v.method)));
+          (_self$log5 = self.log)[v.method].apply(_self$log5, _toConsumableArray(template(message, v.method)));
         });
       }
 
@@ -1280,14 +1279,14 @@ function () {
       function intercept(method) {
         //var original = console[method]
         console[method] = function () {
-          var _self$log2;
+          var _self$log6;
 
           // do sneaky stuff
           method == "log" ? method = "info" : null;
           method == "trace" ? method = "verbose" : null;
           var message = Array.prototype.slice.apply(arguments).join(' ');
 
-          (_self$log2 = self.log)[method].apply(_self$log2, _toConsumableArray(template(message, method)));
+          (_self$log6 = self.log)[method].apply(_self$log6, _toConsumableArray(template(message, method)));
           /*if (original.apply) {
               // Do this for normal browsers
               original.apply(console, arguments)

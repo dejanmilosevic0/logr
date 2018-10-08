@@ -49,26 +49,28 @@ const log = class Log {
         if (!template)
             template = (message) => ([message]);
 
+        var self = this;
+
         if (typeof document != 'undefined') {
 
             if (window.lykke_log_deffered && window.lykke_log_deffered.errors.length > 0) {
 
                 window.lykke_log_deffered.errors.map((v) => {
 
-                    this.log.error(v, ...template(v.message, "error"));
+                    self.log.error(v, ...template(v.message, "error"));
 
                 })
             }
             window.addEventListener('error', function (e) {
 
                 if (e.type == "error" && e.error) {
-                    this.log.error(e.error, ...template(e.message, "error"))
+                    self.log.error(e.error, ...template(e.message, "error"))
                 }
                 else if (e.type == "error") {
                     var target;
                     e.target.tagName == "SCRIPT" || e.target.tagName == "IMG" ? target = e.target.src : null;
                     e.target.tagName == "LINK" ? target = e.target.href : null
-                    this.log.error(new Error(`Failed to load ${e.target.tagName} ${target}`), ...template(`Failed to load ${e.target.tagName} ${e.target.src}`, "error"));
+                    self.log.error(new Error(`Failed to load ${e.target.tagName} ${target}`), ...template(`Failed to load ${e.target.tagName} ${e.target.src}`, "error"));
                 }
                 return true;
             }, true);
@@ -77,7 +79,7 @@ const log = class Log {
         else if (typeof navigator != 'undefined' && navigator.product == 'ReactNative') {
 
             ErrorUtils.setGlobalHandler(function (e) {
-                this.log.error(e, ...template(e.message, "error"));
+                self.log.error(e, ...template(e.message, "error"));
             });
         }
         else {
