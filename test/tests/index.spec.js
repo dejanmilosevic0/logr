@@ -41,7 +41,7 @@ describe('e2e loging', () => {
                     }
                 ],
             },
-            WorkingDir: "/app/src/LogR",
+            WorkingDir: "/app/backend-service/LogR",
             Cmd: ['dotnet', 'run'],
 
             /*Cmd: ['tail', '-f', '/dev/null']*/
