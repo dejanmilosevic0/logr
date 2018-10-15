@@ -1269,6 +1269,8 @@ function () {
           var _self$log5;
 
           var message = Array.prototype.slice.apply(v.arguments).join(' ');
+          v.method == "log" ? v.method = "info" : null;
+          v.method == "trace" ? v.method = "verbose" : null;
 
           (_self$log5 = self.log)[v.method].apply(_self$log5, _toConsumableArray(template(message, v.method)));
         });
