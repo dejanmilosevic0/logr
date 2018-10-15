@@ -1269,10 +1269,11 @@ function () {
           var _self$log5;
 
           var message = Array.prototype.slice.apply(v.arguments).join(' ');
-          v.method == "log" ? v.method = "info" : null;
-          v.method == "trace" ? v.method = "verbose" : null;
+          var method = v.method;
+          v.method == "log" ? method = "info" : null;
+          v.method == "trace" ? method = "verbose" : null;
 
-          (_self$log5 = self.log)[v.method].apply(_self$log5, _toConsumableArray(template(message, v.method)));
+          (_self$log5 = self.log)[method].apply(_self$log5, _toConsumableArray(template(message, method)));
         });
       }
 
