@@ -15,12 +15,11 @@
                 lykke_log_deffered.errors.push(new Error(`Failed to load ${e.target.tagName} ${target}`))
             },
             console_intercept: function (method) {
-                lykke_log_deffered.console_original[method] = console[method];
-                console[method] = function () {
 
+                lykke_log_deffered.console_original[method] = console[method];
+
+                console[method] = function () {
                     var message = Array.prototype.slice.apply(arguments).join(' ')
-                    method == "log" ? method = "info" : null;
-                    method == "trace" ? method = "verbose" : null;
                     if (lykke_log_deffered.console_original[method]) {
                         // Do this for normal browsers
                         lykke_log_deffered.console_original[method].apply(console, arguments)
@@ -28,7 +27,7 @@
                     } else {
                         // Do this for IE
                         lykke_log_deffered.console_original[method](message);
-                        lykke_log_deffered.console.push(message);
+                        lykke_log_deffered.console.push({ method: method, arguments: message });
                     }
                 }
             }

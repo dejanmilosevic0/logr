@@ -96,6 +96,8 @@ const log = class Log {
             window.lykke_log_deffered.console.map((v) => {
 
                 var message = Array.prototype.slice.apply(v.arguments).join(' ')
+                v.method == "log" ? v.method = "info" : null;
+                v.method == "trace" ? v.method = "verbose" : null;
                 self.log[v.method](...template(message, v.method));
 
             })
